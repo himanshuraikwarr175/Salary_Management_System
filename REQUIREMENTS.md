@@ -41,10 +41,11 @@ Replace Excel-based salary tracking with a web app so the HR Manager can:
 
 ## Proposed stack (for next steps)
 
-- **UI:** Next.js (React) + a component library (e.g. shadcn/ui or MUI)
-- **Backend:** Next.js API routes (or separate Node API) + **SQLite** (simple, portable, enough for 10k rows)
-- **Seed:** Script generating 10,000 employees
-- **Tests:** Unit tests for salary update + analytics aggregations
+- **UI:** React + TypeScript + Vite + Tailwind CSS + TanStack Query
+- **Backend:** FastAPI + SQLAlchemy + **PostgreSQL**
+- **Run:** Docker Compose (UI, API, DB) — see `ARCHITECTURE.md` for ports
+- **Seed:** Script generating ~10,000 employees (auto on empty DB in Docker)
+- **Tests:** pytest for salary update + analytics aggregations
 
 ## Non-goals for v1 UX
 
