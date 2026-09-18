@@ -1,0 +1,26 @@
+# Python virtualenvs (never commit)
+backend/venv/
+backend/.venv/
+.venv/
+venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Node (later)
+frontend/node_modules/
+frontend/dist/
+
+# Env & local
+.env
+.env.local
+*.db
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.log
