@@ -18,6 +18,7 @@ frontend/dist/
 .env
 .env.local
 *.db
+backend/data/
 
 # IDE / OS
 .idea/
