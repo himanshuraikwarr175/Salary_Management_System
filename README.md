@@ -40,7 +40,7 @@ Vite proxies `/api` and `/health` to the backend.
 
 ## What you can do
 
-- **Dashboard** — headcount and pay totals/averages per currency; country & department breakdowns
+- **Dashboard** — headcount and pay totals/averages per currency; optional live FX rollup (Frankfurter) into USD/EUR/…; country & department breakdowns
 - **Employees** — search, filter, paginate
 - **Employee detail** — view profile, update salary, see change history
 

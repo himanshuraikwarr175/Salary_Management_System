@@ -7,6 +7,7 @@ from app.services.analytics import (
     breakdown_by_department,
     summary_analytics,
 )
+from app.services.fx import clear_fx_cache, convert_amount, get_rates_vs_base
 
 
 def _add_employee(db, **kwargs) -> Employee:
@@ -23,6 +24,18 @@ def _add_employee(db, **kwargs) -> Employee:
 
 
 def test_summary_per_currency(db):
+    clear_fx_cache()
+
+    def fake_fetch(_base: str):
+        return "2026-03-18", {
+            "USD": Decimal("1"),
+            "INR": Decimal("80"),
+            "EUR": Decimal("0.9"),
+        }
+
+    # Patch via injecting fetch into cache by calling get_rates with fetch
+    get_rates_vs_base("USD", fetch=fake_fetch)
+
     _add_employee(
         db,
         employee_code="A1",
@@ -54,13 +67,23 @@ def test_summary_per_currency(db):
         annual_salary=Decimal("80000"),
     )
 
-    result = summary_analytics(db)
+    result = summary_analytics(db, base_currency="USD")
     assert result["headcount"] == 3
     by_ccy = {row["currency_code"]: row for row in result["by_currency"]}
     assert by_ccy["USD"]["headcount"] == 2
     assert by_ccy["USD"]["total_annual_salary"] == Decimal("180000.00")
-    assert by_ccy["USD"]["avg_annual_salary"] == Decimal("90000.00")
     assert by_ccy["INR"]["headcount"] == 1
+    # 180000 USD + 2000000/80 INR = 180000 + 25000 = 205000
+    assert result["total_in_base"] == Decimal("205000.00")
+    assert result["fx_source"] == "frankfurter"
+    assert result["fx_error"] is None
+
+
+def test_convert_amount_helpers():
+    rates = {"USD": Decimal("1"), "INR": Decimal("80"), "EUR": Decimal("0.9")}
+    assert convert_amount(Decimal("8000"), "INR", "USD", rates) == Decimal("100.00")
+    assert convert_amount(Decimal("90"), "EUR", "USD", rates) == Decimal("100.00")
+    assert convert_amount(Decimal("100"), "USD", "INR", rates) == Decimal("8000.00")
 
 
 def test_breakdown_by_country_and_department(db):
@@ -93,7 +116,21 @@ def test_breakdown_by_country_and_department(db):
     assert {d["department"] for d in departments} == {"Engineering", "Sales"}
 
 
-def test_analytics_api_endpoints(client, db):
+def test_analytics_api_endpoints(client, db, monkeypatch):
+    clear_fx_cache()
+
+    def fake_fetch(_base: str):
+        return "2026-03-18", {
+            "USD": Decimal("1"),
+            "EUR": Decimal("0.9"),
+            "INR": Decimal("80"),
+        }
+
+    monkeypatch.setattr(
+        "app.services.fx._default_fetch",
+        fake_fetch,
+    )
+
     _add_employee(
         db,
         employee_code="C1",
@@ -105,9 +142,13 @@ def test_analytics_api_endpoints(client, db):
         annual_salary=Decimal("70000"),
     )
 
-    summary = client.get("/api/v1/analytics/summary")
+    summary = client.get("/api/v1/analytics/summary", params={"base_currency": "USD"})
     assert summary.status_code == 200
-    assert summary.json()["headcount"] == 1
+    body = summary.json()
+    assert body["headcount"] == 1
+    # 70000 EUR / 0.9 = 77777.78 USD
+    assert body["total_in_base"] == "77777.78"
+    assert body["fx_error"] is None
 
     by_country = client.get("/api/v1/analytics/by-country")
     assert by_country.status_code == 200

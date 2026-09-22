@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://localhost:8080"
     seed_employee_count: int = 10_000
 
+    # Live FX (Frankfurter) — used for optional payroll rollup in a base currency
+    fx_api_base: str = "https://api.frankfurter.app"
+    fx_cache_seconds: int = 3600
+    fx_timeout_seconds: float = 8.0
+    fx_default_base: str = "USD"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

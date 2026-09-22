@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -13,6 +14,12 @@ class CurrencyAggregate(BaseModel):
 class AnalyticsSummaryOut(BaseModel):
     headcount: int
     by_currency: list[CurrencyAggregate]
+    base_currency: Optional[str] = None
+    total_in_base: Optional[Decimal] = None
+    avg_in_base: Optional[Decimal] = None
+    fx_as_of: Optional[str] = None
+    fx_source: Optional[str] = None
+    fx_error: Optional[str] = None
 
 
 class CountryBreakdownOut(BaseModel):

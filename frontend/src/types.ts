@@ -29,6 +29,12 @@ export type CurrencyAggregate = {
 export type AnalyticsSummary = {
   headcount: number;
   by_currency: CurrencyAggregate[];
+  base_currency?: string | null;
+  total_in_base?: string | null;
+  avg_in_base?: string | null;
+  fx_as_of?: string | null;
+  fx_source?: string | null;
+  fx_error?: string | null;
 };
 
 export type CountryBreakdown = {

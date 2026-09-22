@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
@@ -13,8 +15,16 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 
 @router.get("/summary", response_model=AnalyticsSummaryOut)
-def get_summary(db: Session = Depends(get_db)) -> AnalyticsSummaryOut:
-    return AnalyticsSummaryOut(**analytics_service.summary_analytics(db))
+def get_summary(
+    base_currency: Optional[str] = Query(
+        None,
+        description="Roll up payroll into this currency using live FX (default USD)",
+    ),
+    db: Session = Depends(get_db),
+) -> AnalyticsSummaryOut:
+    return AnalyticsSummaryOut(
+        **analytics_service.summary_analytics(db, base_currency=base_currency)
+    )
 
 
 @router.get("/by-country", response_model=list[CountryBreakdownOut])

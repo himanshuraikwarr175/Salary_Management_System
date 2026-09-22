@@ -63,8 +63,9 @@ export function fetchSalaryHistory(id: number) {
   return request<SalaryHistory[]>(`/api/v1/employees/${id}/salary-history`);
 }
 
-export function fetchSummary() {
-  return request<AnalyticsSummary>("/api/v1/analytics/summary");
+export function fetchSummary(baseCurrency = "USD") {
+  const qs = new URLSearchParams({ base_currency: baseCurrency });
+  return request<AnalyticsSummary>(`/api/v1/analytics/summary?${qs.toString()}`);
 }
 
 export function fetchByCountry() {

@@ -1,14 +1,21 @@
-"""Org-level compensation analytics (per currency — no FX conversion)."""
+"""Org-level compensation analytics (per currency + optional FX rollup)."""
 
 from decimal import Decimal
+from typing import Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models import Employee
+from app.services.fx import FxError, convert_amount, get_rates_vs_base
 
 
-def summary_analytics(db: Session) -> dict:
+def summary_analytics(
+    db: Session,
+    *,
+    base_currency: Optional[str] = None,
+) -> dict:
     headcount = db.scalar(
         select(func.count()).select_from(Employee).where(Employee.is_active.is_(True))
     ) or 0
@@ -35,7 +42,49 @@ def summary_analytics(db: Session) -> dict:
         for currency, count, total, avg in rows
     ]
 
-    return {"headcount": int(headcount), "by_currency": by_currency}
+    target = (base_currency or settings.fx_default_base or "USD").upper()
+    result: dict = {
+        "headcount": int(headcount),
+        "by_currency": by_currency,
+        "base_currency": target,
+        "total_in_base": None,
+        "avg_in_base": None,
+        "fx_as_of": None,
+        "fx_source": None,
+        "fx_error": None,
+    }
+
+    if headcount == 0:
+        return result
+
+    try:
+        # Frankfurter rates with from=USD → units of C per 1 USD
+        as_of, rates_vs_usd = get_rates_vs_base("USD")
+        rates_vs_usd = {**rates_vs_usd, "USD": Decimal("1")}
+
+        total_base = Decimal("0.00")
+        for row in by_currency:
+            total_base += convert_amount(
+                row["total_annual_salary"],
+                row["currency_code"],
+                target,
+                rates_vs_usd,
+            )
+
+        result.update(
+            {
+                "total_in_base": total_base,
+                "avg_in_base": (total_base / Decimal(headcount)).quantize(
+                    Decimal("0.01")
+                ),
+                "fx_as_of": as_of,
+                "fx_source": "frankfurter",
+            }
+        )
+    except FxError as exc:
+        result["fx_error"] = str(exc)
+
+    return result
 
 
 def breakdown_by_country(db: Session) -> list[dict]:

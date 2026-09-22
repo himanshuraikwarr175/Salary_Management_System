@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   fetchByCountry,
   fetchByDepartment,
@@ -7,8 +8,15 @@ import {
 } from "../api/client";
 import { ErrorBox, Spinner } from "../components/Status";
 
+const BASE_OPTIONS = ["USD", "EUR", "INR", "GBP", "CAD", "AUD", "SGD", "JPY"];
+
 export function DashboardPage() {
-  const summary = useQuery({ queryKey: ["summary"], queryFn: fetchSummary });
+  const [baseCurrency, setBaseCurrency] = useState("USD");
+
+  const summary = useQuery({
+    queryKey: ["summary", baseCurrency],
+    queryFn: () => fetchSummary(baseCurrency),
+  });
   const byCountry = useQuery({
     queryKey: ["by-country"],
     queryFn: fetchByCountry,
@@ -32,6 +40,39 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="font-display text-xl font-semibold text-ink">
+            Org pay snapshot
+          </h2>
+          <p className="text-sm text-slate-600">
+            Native totals stay per currency; rollup uses live Frankfurter FX.
+          </p>
+        </div>
+        <label className="block text-sm">
+          <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+            Rollup currency
+          </span>
+          <select
+            value={baseCurrency}
+            onChange={(e) => setBaseCurrency(e.target.value)}
+            className="rounded-md border border-slate-200 bg-white px-3 py-2 outline-none ring-accent focus:ring-2"
+          >
+            {BASE_OPTIONS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {data.fx_error && (
+        <ErrorBox
+          message={`Live FX unavailable (${data.fx_error}). Per-currency totals still shown.`}
+        />
+      )}
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <article className="rounded-xl bg-ink px-5 py-6 text-white shadow-sm">
           <p className="text-xs uppercase tracking-wider text-teal-200">
@@ -40,11 +81,39 @@ export function DashboardPage() {
           <p className="mt-2 font-display text-4xl font-semibold">
             {data.headcount.toLocaleString()}
           </p>
-          <p className="mt-2 text-sm text-slate-300">
-            Totals stay per currency — no FX mixing.
-          </p>
+          {data.total_in_base != null && data.base_currency && !data.fx_error ? (
+            <p className="mt-3 text-sm text-slate-200">
+              Payroll rollup ≈{" "}
+              <span className="font-semibold text-white">
+                {formatMoney(data.total_in_base, data.base_currency)}
+              </span>
+              {data.fx_as_of ? ` · FX ${data.fx_as_of}` : ""}
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-slate-300">
+              Choose a rollup currency for a single org-wide total.
+            </p>
+          )}
         </article>
-        {data.by_currency.slice(0, 5).map((row) => (
+
+        {data.total_in_base != null &&
+          data.avg_in_base != null &&
+          data.base_currency &&
+          !data.fx_error && (
+            <article className="rounded-xl bg-accent px-5 py-5 text-white shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wider text-teal-100">
+                Avg in {data.base_currency}
+              </p>
+              <p className="mt-2 text-2xl font-semibold">
+                {formatMoney(data.avg_in_base, data.base_currency)}
+              </p>
+              <p className="mt-1 text-sm text-teal-50">
+                Live rates via {data.fx_source ?? "FX provider"}
+              </p>
+            </article>
+          )}
+
+        {data.by_currency.slice(0, 4).map((row) => (
           <article
             key={row.currency_code}
             className="rounded-xl bg-white/90 px-5 py-5 shadow-sm ring-1 ring-slate-200/80"

@@ -17,7 +17,7 @@ Replace Excel-based salary tracking with a web app so the HR Manager can:
 |------|----------|
 | **Employees** | List, search by name/ID, filter by country & department; view employee detail |
 | **Salary** | View current salary (amount + currency); update salary; keep a simple change history |
-| **Insights** | Dashboard: headcount, total payroll (by currency), avg salary; breakdowns by country and department |
+| **Insights** | Dashboard: headcount, totals/avg **per currency**, country/dept breakdowns; optional **live FX rollup** (Frankfurter) into a chosen base currency |
 | **Data** | Seed ~10,000 realistic employees across multiple countries |
 | **Quality** | Unit tests for core salary/analytics logic; incremental commits; deployable app |
 
@@ -28,7 +28,6 @@ Replace Excel-based salary tracking with a web app so the HR Manager can:
 | Full payroll (payslips, tax, deductions, benefits) | Different product; this assessment is salary *data* + insights, not a payroll engine |
 | Approvals / multi-step workflows | Adds process complexity without proving core HR salary management |
 | Multi-role auth / SSO / fine-grained RBAC | Single HR Manager persona; simple optional login is enough if needed |
-| Currency FX conversion / single-currency rollup | Real FX is noisy; show totals **per currency** instead |
 | Mobile app, notifications, Excel import/export v1 | Nice-to-haves; not required for a clear MVP |
 | Real-time collaboration / audit for compliance | Overkill for demo scale; keep a lightweight salary-change history only |
 
