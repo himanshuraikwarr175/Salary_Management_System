@@ -38,13 +38,14 @@ Replace Excel-based salary tracking with a web app so the HR Manager can:
 - Seeded data supports ~10k employees without feeling broken (pagination / filters).
 - Tests cover core calculation and update rules; app is deployed with a short demo video.
 
-## Proposed stack (for next steps)
+## Proposed stack
 
 - **UI:** React + TypeScript + Vite + Tailwind CSS + TanStack Query
-- **Backend:** FastAPI + SQLAlchemy + **PostgreSQL**
-- **Run:** Docker Compose (UI, API, DB) — see `ARCHITECTURE.md` for ports
+- **Backend:** FastAPI + SQLAlchemy + **SQLite** locally / Docker volume (Postgres via `DATABASE_URL` if needed)
+- **Run:** Docker Compose (UI + API) — see `README.md` / `docs/DEPLOY.md`
 - **Seed:** Script generating ~10,000 employees (auto on empty DB in Docker)
-- **Tests:** pytest for salary update + analytics aggregations
+- **Tests:** pytest for salary update + analytics + FX conversion helpers
+- **FX:** Frankfurter live rates for optional dashboard rollup
 
 ## Non-goals for v1 UX
 

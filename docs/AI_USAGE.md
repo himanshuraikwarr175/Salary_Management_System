@@ -16,7 +16,7 @@ This file records how AI was used on this project.
 | Architecture | Folder layout, API sketch, data model | Chose FastAPI + React/Vite + SQLite local; Postgres optional later |
 | Backend | Models, salary service, analytics, seed, FX | Tests first for money/FX math; no JWT after trying then removing |
 | Frontend | Dashboard / employees / detail screens | Simple HR flows over complex UI |
-| Artifacts | This note, README, requirements sync | Incremental commits controlled by author |
+| Artifacts | Requirements, architecture, AI usage, trade-offs, performance, deploy, demo checklist | Incremental commits controlled by author |
 
 ## Example instruction style (not verbatim chat logs)
 

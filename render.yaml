@@ -1,0 +1,18 @@
+# Optional Render Blueprint — adjust service names after connect-to-repo.
+# See docs/DEPLOY.md for full instructions (Vercel frontend + CORS).
+
+services:
+  - type: web
+    name: acme-salary-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: CORS_ORIGINS
+        sync: false
+      - key: FX_API_BASE
+        value: https://api.frankfurter.dev/v1
+      - key: DATABASE_URL
+        value: sqlite:////data/salary.db

@@ -13,31 +13,33 @@ HR can:
 1. Find employees and update salaries.
 2. Answer org pay questions (totals / averages / breakdowns).
 
-We keep the **same engineering shape** as a solid production-style app (separate backend/frontend, Postgres, Docker), but **fewer product features** than a full payroll suite.
+We keep a **production-style** shape (separate backend/frontend, relational DB, Docker), with a deliberately small product surface.
 
 ---
 
 ## 2. High-level stack
 
-|   Layer       | Choice                        |                   Why                                |
-|---------------|-------------------------------|------------------------------------------------------|
-| Backend       | **FastAPI** + SQLAlchemy      | Fast APIs, clear OpenAPI docs (`/docs`), easy pytest |
-| DB            | **PostgreSQL**                | Real relational DB; indexes + pagination for 10k rows|
-| Frontend      | **React + TypeScript + Vite** | Fast local UX; clear SPA                             |
-| Styling       | **Tailwind CSS**              | Quick, consistent UI without heavy design debt       |
-| Data fetching | **TanStack Query**            | Cache, loading/error states for list + dashboard     |
-| Tests         | **pytest**                    | Fast, deterministic backend unit/API tests           |
-| Run           | **Docker Compose**            | One command for reviewers (UI + API + DB)            |
+| Layer | Choice | Why |
+|-------|--------|-----|
+| Backend | **FastAPI** + SQLAlchemy | Fast APIs, OpenAPI `/docs`, easy pytest |
+| DB | **SQLite** default (Postgres optional via `DATABASE_URL`) | Simple local/Docker demo; portable schema |
+| Frontend | **React + TypeScript + Vite** | Clear SPA |
+| Styling | **Tailwind CSS** | Fast, consistent UI |
+| Data fetching | **TanStack Query** | Cache + loading/error states |
+| FX | **Frankfurter** (`api.frankfurter.dev`) | Optional org-wide rollup; cached |
+| Tests | **pytest** | Fast deterministic backend tests |
+| Run | **Docker Compose** | UI `:8080` + API `:8000` |
 
-**Ports (same convention as reference):**
+**Ports:**
 
-| Service  | Docker                              |              Local    |
-|----------|-------------------------------------|-----------------------|
-| UI       |         http://localhost:8080       | http://localhost:5173 |
-| API      |        http://localhost:8000        | http://localhost:8000 |
-| Postgres | localhost:**5433** → container 5432 |          same         |
-| API docs |    http://localhost:8000/docs       |          same         |
-| Health   | http://localhost:8000/health        |          same         |
+| Service | Docker | Local |
+|---------|--------|--------|
+| UI | http://localhost:8080 | http://localhost:5173 |
+| API | http://localhost:8000 | http://localhost:8000 |
+| API docs | http://localhost:8000/docs | same |
+| Health | http://localhost:8000/health | same |
+
+More diagrams: `docs/ARCHITECTURE_DIAGRAM.md`. Trade-offs: `docs/TRADEOFFS.md`. Performance: `docs/PERFORMANCE.md`.
 
 ---
 
@@ -218,11 +220,10 @@ seed/ (first boot or `python -m app.seed.seed_data`)
 | Friend’s README | Our choice | Why |
 |-----------------|------------|-----|
 | Hire wizard, salary components, payment status | Out of v1 | Scope creep; not needed to prove salary *management* + insights |
-| Live FX / exchange-rates | Out of v1 | Show totals per currency; FX is noisy for assessment |
+| Live FX / exchange-rates | **In** (optional rollup) | Per-currency native totals remain; Frankfurter for org-wide view |
 | Master-data admin CRUD | Seeded constants / columns | Enough for filters + analytics |
-| Same ports, FastAPI, React Vite, Postgres, Docker | **In** | Familiar, reviewable, production-like |
-| SQLite / Next monolith (earlier draft) | Dropped | Align with reference stack you asked to follow |
-
+| Same ports, FastAPI, React Vite, Docker | **In** | Familiar, reviewable |
+| Postgres always-on | SQLite default | Faster demo path; Postgres still supported via env |
 ---
 
 ## 11. Performance notes (10k)

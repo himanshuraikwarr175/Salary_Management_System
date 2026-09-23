@@ -7,8 +7,18 @@ import type {
   SalaryHistory,
 } from "./types";
 
+/** Empty = same-origin (/api via Vite proxy or nginx). Set for split deploys. */
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(
+  /\/$/,
+  "",
+) ?? "";
+
+function url(path: string): string {
+  return `${API_BASE}${path}`;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(url(path), {
     headers: {
       "Content-Type": "application/json",
       ...(init?.headers ?? {}),
