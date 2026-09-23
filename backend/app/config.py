@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     seed_employee_count: int = 10_000
 
     # Live FX (Frankfurter) — used for optional payroll rollup in a base currency
-    fx_api_base: str = "https://api.frankfurter.app"
+    fx_api_base: str = "https://api.frankfurter.dev/v1"
     fx_cache_seconds: int = 3600
     fx_timeout_seconds: float = 8.0
     fx_default_base: str = "USD"

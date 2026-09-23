@@ -27,6 +27,7 @@ def _default_fetch(base: str) -> tuple[str, RatesMap]:
             url,
             params={"from": base},
             timeout=settings.fx_timeout_seconds,
+            follow_redirects=True,
         )
         response.raise_for_status()
         payload = response.json()
